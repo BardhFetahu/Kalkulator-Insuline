@@ -1,1 +1,994 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1B6B5A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Insulina">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Kalkulator Insuline</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F0EDE8;--bg2:#E8E4DE;--card:#FFFFFF;--card2:#F7F5F2;
+  --primary:#1B6B5A;--primary-light:#E8F3F0;--primary-dark:#134A3E;
+  --accent:#D4613A;--accent-light:#FFF0EB;
+  --text:#2C2C2C;--text-muted:#7A7A7A;--border:#E0DDD8;
+  --low:#2E8B57;--normal:#1B6B5A;--high:#D4613A;--very-high:#C0392B;
+  --shadow:0 2px 20px rgba(0,0,0,0.06);--nav-h:64px;
+}
+[data-palette="pink"]{--primary:#C0527A;--primary-light:#FCE8EF;--primary-dark:#8B3558;--accent:#E89B42;--accent-light:#FFF6E8;}
+[data-palette="blue"]{--primary:#2563A8;--primary-light:#EBF2FC;--primary-dark:#1A3F72;--accent:#E84393;--accent-light:#FFEDF6;}
+[data-palette="purple"]{--primary:#7B4ECC;--primary-light:#F0EAFB;--primary-dark:#52308A;--accent:#E8654A;--accent-light:#FFF0ED;}
+[data-palette="amber"]{--primary:#B5680A;--primary-light:#FEF3E2;--primary-dark:#7A4505;--accent:#2E86AB;--accent-light:#E6F4F9;}
+[data-theme="dark"]{
+  --bg:#0F1117;--bg2:#181C25;--card:#1E2230;--card2:#252A3A;
+  --text:#F0EDE8;--text-muted:#8A90A8;--border:#2E3348;
+  --primary-light:rgba(27,107,90,0.18);--accent-light:rgba(212,97,58,0.15);
+  --shadow:0 2px 20px rgba(0,0,0,0.3);
+}
+[data-theme="dark"][data-palette="pink"]{--primary-light:rgba(192,82,122,0.18);}
+[data-theme="dark"][data-palette="blue"]{--primary-light:rgba(37,99,168,0.18);}
+[data-theme="dark"][data-palette="purple"]{--primary-light:rgba(123,78,204,0.18);}
+[data-theme="dark"][data-palette="amber"]{--primary-light:rgba(181,104,10,0.18);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:18px 14px calc(var(--nav-h) + 20px);-webkit-tap-highlight-color:transparent;transition:background 0.3s,color 0.3s;}
 
+/* TOPBAR */
+.topbar{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;animation:fadeDown 0.5s ease-out;}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-logo{width:42px;height:42px;background:var(--primary);border-radius:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px rgba(0,0,0,0.15);flex-shrink:0;}
+.topbar-logo svg{width:22px;height:22px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.topbar-titles h1{font-family:'DM Serif Display',serif;font-size:17px;color:var(--primary-dark);letter-spacing:-0.3px;}
+[data-theme="dark"] .topbar-titles h1{color:var(--text);}
+.topbar-titles p{font-size:11px;color:var(--text-muted);font-weight:300;}
+.topbar-actions{display:flex;gap:6px;}
+.icon-btn{width:38px;height:38px;border:none;border-radius:11px;background:var(--card);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);border:1px solid var(--border);font-size:16px;transition:all 0.2s;flex-shrink:0;}
+.icon-btn:hover{background:var(--primary-light);color:var(--primary);}
+
+/* CONTROLS */
+.top-controls{width:100%;max-width:440px;display:flex;gap:8px;margin-bottom:14px;animation:fadeDown 0.5s ease-out 0.05s both;}
+.seg-toggle{display:flex;background:var(--card);border-radius:12px;padding:3px;box-shadow:var(--shadow);border:1px solid var(--border);gap:3px;}
+.seg-toggle.grow{flex:1;}
+.seg-toggle button{flex:1;padding:8px 12px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.25s;background:transparent;color:var(--text-muted);}
+.seg-toggle button.active{background:var(--primary);color:white;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+
+/* PALETTE PANEL */
+.palette-panel{width:100%;max-width:440px;background:var(--card);border-radius:16px;padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border);display:none;animation:fadeDown 0.3s ease-out;}
+.palette-panel.show{display:block;}
+.palette-label{font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);font-weight:600;margin-bottom:12px;}
+.palette-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.palette-swatch{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.2s;position:relative;flex-shrink:0;}
+.palette-swatch.active{border-color:var(--text);transform:scale(1.15);}
+.palette-swatch::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700;opacity:0;transition:opacity 0.2s;}
+.palette-swatch.active::after{opacity:1;}
+.vdivider{width:1px;height:26px;background:var(--border);}
+.theme-chips{display:flex;gap:6px;}
+.theme-chip{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted);transition:all 0.2s;}
+.theme-chip.active{border-color:var(--primary);color:var(--primary);background:var(--primary-light);}
+
+/* CARDS */
+.calculator{width:100%;max-width:440px;animation:fadeUp 0.5s ease-out 0.1s both;}
+.card{background:var(--card);border-radius:20px;padding:22px 20px;box-shadow:var(--shadow);margin-bottom:12px;border:1px solid var(--border);position:relative;overflow:hidden;transition:background 0.3s,border-color 0.3s;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));opacity:0.8;}
+.card-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--primary-dark);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+[data-theme="dark"] .card-title{color:var(--text);}
+.card-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;}
+.form-group{margin-bottom:16px;}
+.form-group:last-child{margin-bottom:0;}
+label{display:block;font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.9px;}
+.input-wrapper{position:relative;display:flex;align-items:center;}
+input[type="number"]{width:100%;padding:12px 15px;border:2px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:18px;font-weight:500;color:var(--text);background:var(--card2);transition:all 0.25s;-moz-appearance:textfield;appearance:textfield;}
+[data-theme="dark"] input[type="number"]{background:var(--bg2);}
+input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;}
+input[type="number"]:focus{outline:none;border-color:var(--primary);background:var(--card);box-shadow:0 0 0 4px var(--primary-light);}
+.unit{position:absolute;right:13px;font-size:11px;font-weight:500;color:var(--text-muted);pointer-events:none;}
+.range-visual{display:flex;gap:3px;margin-top:7px;height:5px;border-radius:3px;overflow:hidden;}
+.range-visual span{flex:1;border-radius:3px;}
+.r-low{background:#2E8B57;}.r-normal{background:var(--primary);}.r-high{background:var(--high);}.r-vhigh{background:var(--very-high);}
+.range-labels{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:var(--text-muted);}
+.presets{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.preset-btn{padding:5px 12px;border:1.5px solid var(--border);border-radius:20px;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+.preset-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);}
+.preset-btn.active{border-color:var(--primary);color:white;background:var(--primary);}
+.btn-calc{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.3s;box-shadow:0 4px 16px rgba(0,0,0,0.2);margin-top:6px;letter-spacing:0.3px;}
+.btn-calc:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,0.25);}
+.btn-calc:active{transform:scale(0.98);}
+
+/* RESULT */
+.result-card{display:none;animation:fadeUp 0.4s ease-out;}
+.result-card.show{display:block;}
+.result-card .card::before{background:linear-gradient(90deg,var(--accent),var(--primary));}
+.result-main{text-align:center;padding:12px 0 16px;}
+.result-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:500;margin-bottom:6px;}
+.result-value{font-family:'DM Serif Display',serif;font-size:52px;color:var(--primary-dark);line-height:1;margin-bottom:4px;}
+[data-theme="dark"] .result-value{color:var(--text);}
+.result-unit{font-size:13px;color:var(--text-muted);font-weight:300;}
+.result-breakdown{border-top:1px solid var(--border);padding-top:16px;margin-top:6px;}
+.breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;}
+.breakdown-row+.breakdown-row{border-top:1px dashed var(--border);}
+.breakdown-row .bl{font-size:13px;color:var(--text-muted);}
+.breakdown-row .bv{font-size:15px;font-weight:600;color:var(--text);}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;margin-top:10px;}
+.status-badge .sd{width:7px;height:7px;border-radius:50%;}
+.status-low{background:#E8F5EE;color:#2E8B57;}.status-low .sd{background:#2E8B57;}
+.status-normal{background:var(--primary-light);color:var(--primary);}.status-normal .sd{background:var(--primary);}
+.status-high{background:var(--accent-light);color:var(--high);}.status-high .sd{background:var(--high);}
+.status-vhigh{background:#FDECEC;color:var(--very-high);}.status-vhigh .sd{background:var(--very-high);}
+.warning-box{background:#FFF8E8;border:1px solid #F0D98C;border-radius:12px;padding:12px 14px;margin-top:12px;display:flex;gap:10px;align-items:flex-start;font-size:11px;line-height:1.55;color:#8B6914;}
+[data-theme="dark"] .warning-box{background:rgba(240,217,140,0.08);border-color:rgba(240,217,140,0.2);color:#D4B14A;}
+.warning-box svg{flex-shrink:0;margin-top:1px;}
+
+/* ALERTS */
+.alert-section{width:100%;max-width:440px;margin-bottom:12px;}
+.alert-card{border-radius:16px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;border:1px solid;animation:alertPop 0.35s cubic-bezier(0.34,1.56,0.64,1);}
+.alert-hypo{background:linear-gradient(135deg,#FDECEC,#FFF5F5);border-color:#F5A8A8;}
+[data-theme="dark"] .alert-hypo{background:rgba(192,57,43,0.1);border-color:rgba(192,57,43,0.25);}
+.alert-hyper{background:linear-gradient(135deg,#FFF8E8,#FFFDF2);border-color:#F0D98C;}
+[data-theme="dark"] .alert-hyper{background:rgba(240,217,140,0.08);border-color:rgba(240,217,140,0.25);}
+.alert-ok{background:linear-gradient(135deg,#E8F5EE,#F0FBF5);border-color:#A8D8BB;}
+[data-theme="dark"] .alert-ok{background:rgba(46,139,87,0.1);border-color:rgba(46,139,87,0.25);}
+.alert-icon{font-size:24px;flex-shrink:0;}
+.alert-content h3{font-size:14px;font-weight:700;margin-bottom:4px;}
+.alert-hypo .alert-content h3{color:#C0392B;}
+.alert-hyper .alert-content h3{color:#8B6914;}
+.alert-ok .alert-content h3{color:#2E8B57;}
+[data-theme="dark"] .alert-hypo h3{color:#E87070;}
+[data-theme="dark"] .alert-hyper h3{color:#D4B14A;}
+[data-theme="dark"] .alert-ok h3{color:#5CC88A;}
+.alert-content p{font-size:12px;line-height:1.6;color:var(--text-muted);}
+.alert-actions{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;}
+.alert-btn{padding:5px 13px;border-radius:20px;border:1.5px solid currentColor;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;transition:all 0.2s;}
+.alert-hypo .alert-btn{color:#C0392B;}
+.alert-hyper .alert-btn{color:#8B6914;}
+.alert-ok .alert-btn{color:#2E8B57;}
+.alert-btn:hover{background:currentColor;color:white;}
+
+/* DASHBOARD */
+.dash-view{width:100%;max-width:440px;}
+.dash-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--primary-dark);margin-bottom:14px;}
+[data-theme="dark"] .dash-title{color:var(--text);}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat-card{background:var(--card);border-radius:16px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:background 0.3s;}
+.stat-card::after{content:'';position:absolute;bottom:-12px;right:-12px;width:60px;height:60px;border-radius:50%;background:var(--primary);opacity:0.05;}
+.stat-icon{font-size:18px;margin-bottom:7px;}
+.stat-value{font-family:'DM Serif Display',serif;font-size:26px;color:var(--primary-dark);line-height:1;}
+[data-theme="dark"] .stat-value{color:var(--text);}
+.stat-label{font-size:10px;color:var(--text-muted);font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;}
+.stat-sub{font-size:11px;color:var(--primary);font-weight:500;margin-top:2px;}
+.chart-card{background:var(--card);border-radius:18px;padding:18px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:12px;transition:background 0.3s;}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.chart-ttl{font-family:'DM Serif Display',serif;font-size:15px;color:var(--primary-dark);}
+[data-theme="dark"] .chart-ttl{color:var(--text);}
+.chart-sub{font-size:11px;color:var(--text-muted);}
+.chart-wrap{position:relative;height:130px;}
+.chart-wrap canvas{display:block;}
+.chart-legend{display:flex;gap:14px;margin-top:10px;font-size:11px;color:var(--text-muted);flex-wrap:wrap;}
+.leg-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:middle;}
+.tip-card{background:var(--card);border-radius:16px;padding:18px;border:1px solid var(--border);border-left:4px solid var(--primary);box-shadow:var(--shadow);margin-bottom:12px;transition:background 0.3s;}
+.tip-label{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--primary);font-weight:700;margin-bottom:6px;}
+.tip-text{font-size:13px;color:var(--text-muted);line-height:1.7;}
+
+/* HISTORY */
+.hist-view{width:100%;max-width:440px;}
+.hist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.hist-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--primary-dark);}
+[data-theme="dark"] .hist-title{color:var(--text);}
+.hist-clear{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+.hist-clear:hover{border-color:var(--very-high);color:var(--very-high);}
+.hist-empty{text-align:center;padding:40px 20px;background:var(--card);border-radius:18px;border:1px solid var(--border);color:var(--text-muted);font-size:14px;line-height:1.7;}
+.hist-empty .he-icon{font-size:34px;margin-bottom:12px;opacity:0.4;}
+.hist-item{background:var(--card);border-radius:15px;padding:14px 16px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:9px;display:flex;align-items:center;gap:14px;animation:fadeUp 0.25s ease-out;transition:background 0.3s,border-color 0.2s;cursor:default;}
+.hist-item:hover{border-color:var(--primary);}
+.hi-badge{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:14px;font-weight:bold;flex-shrink:0;}
+.badge-low{background:#E8F5EE;color:#2E8B57;}
+.badge-normal{background:var(--primary-light);color:var(--primary);}
+.badge-high{background:var(--accent-light);color:var(--high);}
+.badge-vhigh{background:#FDECEC;color:var(--very-high);}
+.hi-info{flex:1;min-width:0;}
+.hi-top{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
+.hi-bg{font-size:15px;font-weight:700;color:var(--text);}
+.hi-dose{font-size:13px;font-weight:600;color:var(--primary);}
+.hi-details{font-size:11px;color:var(--text-muted);}
+.hi-time{font-size:11px;color:var(--text-muted);text-align:right;flex-shrink:0;}
+
+/* GUIDE */
+.guide-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.guide-arrow{width:26px;height:26px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;transition:transform 0.3s;font-size:10px;color:var(--primary);}
+.guide-arrow.open{transform:rotate(180deg);}
+.guide-content{max-height:0;overflow:hidden;transition:max-height 0.4s ease;}
+.guide-content.open{max-height:2000px;}
+.step{display:flex;gap:12px;padding:12px 0;}
+.step+.step{border-top:1px solid var(--border);}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.step-title{font-weight:600;font-size:13px;color:var(--primary-dark);margin-bottom:2px;}
+[data-theme="dark"] .step-title{color:var(--text);}
+.step-desc{font-size:12px;color:var(--text-muted);line-height:1.6;}
+.step-desc strong{color:var(--text);}
+.formula-box{background:var(--primary-light);border:1px solid var(--border);border-radius:12px;padding:13px;margin-top:12px;text-align:center;}
+.formula-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--primary);font-weight:700;margin-bottom:5px;}
+.formula{font-family:'DM Serif Display',serif;font-size:14px;color:var(--primary-dark);line-height:1.7;}
+[data-theme="dark"] .formula{color:var(--text);}
+
+/* NAV */
+.nav-bar{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;align-items:center;padding:0 8px;z-index:100;box-shadow:0 -4px 24px rgba(0,0,0,0.07);transition:background 0.3s;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 4px;border-radius:12px;transition:all 0.2s;border:none;background:transparent;color:var(--text-muted);font-family:'DM Sans',sans-serif;}
+.nav-item:hover{background:var(--primary-light);color:var(--primary);}
+.nav-item.active{color:var(--primary);}
+.nav-icon{font-size:21px;}
+.nav-lbl{font-size:10px;font-weight:600;letter-spacing:0.2px;}
+.nav-dot{width:4px;height:4px;border-radius:50%;background:var(--primary);opacity:0;transition:opacity 0.2s;}
+.nav-item.active .nav-dot{opacity:1;}
+
+/* VIEWS */
+.view{display:none;width:100%;}
+.view.active{display:flex;flex-direction:column;align-items:center;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--nav-h) + 14px);left:50%;transform:translateX(-50%) translateY(20px);background:#2C2C2C;color:#F0EDE8;padding:9px 20px;border-radius:24px;font-size:13px;font-weight:500;box-shadow:0 4px 24px rgba(0,0,0,0.2);opacity:0;transition:all 0.3s;z-index:200;white-space:nowrap;}
+[data-theme="dark"] .toast{background:#F0EDE8;color:#2C2C2C;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* OFFLINE */
+.offline-badge{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);background:var(--very-high);color:white;padding:7px 16px;border-radius:20px;font-size:11px;font-weight:600;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+.offline-badge.show{display:block;}
+
+.disclaimer{width:100%;max-width:440px;text-align:center;font-size:10px;color:var(--text-muted);line-height:1.6;padding:0 8px;margin-top:6px;}
+
+/* ANIMATIONS */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes alertPop{from{opacity:0;transform:scale(0.94)}to{opacity:1;transform:scale(1)}}
+@media(max-width:480px){body{padding:14px 12px calc(var(--nav-h)+18px)}.card{padding:18px 15px}.result-value{font-size:44px}}
+</style>
+</head>
+<body data-theme="light" data-palette="teal">
+
+<div class="offline-badge" id="offlineBadge">📡 Offline</div>
+<div class="toast" id="toast"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-opacity="0.2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </div>
+    <div class="topbar-titles">
+      <h1 id="appTitle">Kalkulator Insuline</h1>
+      <p id="appSubtitle">Doza e insulinës rapide</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="togglePalette()" title="Ngjyrat">🎨</button>
+    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="top-controls">
+  <div class="seg-toggle grow">
+    <button class="active" id="btnMgdl" onclick="switchUnit('mgdl')">mg/dL</button>
+    <button id="btnMmol" onclick="switchUnit('mmol')">mmol/L</button>
+  </div>
+  <div class="seg-toggle">
+    <button class="active" id="btnSq" onclick="switchLang('sq')">SQ</button>
+    <button id="btnEn" onclick="switchLang('en')">EN</button>
+  </div>
+</div>
+
+<!-- PALETTE PANEL -->
+<div class="palette-panel" id="palettePanel">
+  <div class="palette-label" id="lbl_palette">Zgjidh paletën</div>
+  <div class="palette-row">
+    <div class="palette-swatch active" style="background:#1B6B5A" data-p="teal" onclick="setPalette('teal')"></div>
+    <div class="palette-swatch" style="background:#C0527A" data-p="pink" onclick="setPalette('pink')"></div>
+    <div class="palette-swatch" style="background:#2563A8" data-p="blue" onclick="setPalette('blue')"></div>
+    <div class="palette-swatch" style="background:#7B4ECC" data-p="purple" onclick="setPalette('purple')"></div>
+    <div class="palette-swatch" style="background:#B5680A" data-p="amber" onclick="setPalette('amber')"></div>
+    <div class="vdivider"></div>
+    <div class="theme-chips">
+      <button class="theme-chip active" id="chipLight" onclick="setTheme('light')">☀️ <span id="lbl_light">Ditë</span></button>
+      <button class="theme-chip" id="chipDark" onclick="setTheme('dark')">🌙 <span id="lbl_dark">Natë</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: CALCULATOR -->
+<div class="view active" id="view-calc">
+  <div class="alert-section" id="alertSection"></div>
+  <div class="calculator">
+
+    <!-- GUIDE -->
+    <div class="card">
+      <div class="guide-toggle" onclick="toggleGuide()">
+        <div class="card-title" style="margin-bottom:0"><span class="dot"></span><span id="lbl_guide">Si funksionon?</span></div>
+        <div class="guide-arrow" id="guideArrow">▼</div>
+      </div>
+      <div class="guide-content" id="guideContent">
+        <div style="padding-top:12px">
+          <div class="step"><div class="step-num">1</div><div><div class="step-title" id="g1t">Zgjidh njësinë</div><div class="step-desc" id="g1d">Kliko mg/dL ose mmol/L sipas glukometrit tënd.</div></div></div>
+          <div class="step"><div class="step-num">2</div><div><div class="step-title" id="g2t">Fut sheqerin aktual</div><div class="step-desc" id="g2d">Vlera aktuale e glukometrit tënd.</div></div></div>
+          <div class="step"><div class="step-num">3</div><div><div class="step-title" id="g3t">ISF — Faktori i ndjeshmërisë</div><div class="step-desc" id="g3d"><strong>Sa e ul sheqerin 1U insulinë.</strong> Zakonisht 30–60. Caktohet nga mjeku.</div></div></div>
+          <div class="step"><div class="step-num">4</div><div><div class="step-title" id="g4t">Karbohidratet (opsionale)</div><div class="step-desc" id="g4d">Nëse do të hash, fut gramët dhe raportin ICR.</div></div></div>
+          <div class="formula-box">
+            <div class="formula-label" id="lbl_fml">Formula</div>
+            <div class="formula" id="formulaText">Doza = (Sheqeri − Target) ÷ ISF<br><span style="font-size:12px;color:var(--text-muted);font-family:'DM Sans'">+ Karbohidrate ÷ ICR</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INPUTS -->
+    <div class="card">
+      <div class="card-title"><span class="dot"></span><span id="lbl_data">Të dhënat</span></div>
+
+      <div class="form-group">
+        <label id="lbl_cBG">Sheqeri aktual</label>
+        <div class="input-wrapper">
+          <input type="number" id="currentBG" placeholder="p.sh. 220" step="any" inputmode="decimal">
+          <span class="unit" id="unitCBG">mg/dL</span>
+        </div>
+        <div class="range-visual"><span class="r-low"></span><span class="r-normal"></span><span class="r-high"></span><span class="r-vhigh"></span></div>
+        <div class="range-labels" id="rangeLabels"><span>Ulët (&lt;70)</span><span>Normal (70–130)</span><span>Lartë (130–250)</span><span>Shumë lartë (&gt;250)</span></div>
+      </div>
+
+      <div class="form-group">
+        <label id="lbl_tBG">Sheqeri i synuar (Target)</label>
+        <div class="input-wrapper">
+          <input type="number" id="targetBG" value="120" step="any" inputmode="decimal">
+          <span class="unit" id="unitTBG">mg/dL</span>
+        </div>
+        <div class="presets" id="targetPresets">
+          <button class="preset-btn" onclick="setTarget(0)">100</button>
+          <button class="preset-btn active" onclick="setTarget(1)">120</button>
+          <button class="preset-btn" onclick="setTarget(2)">140</button>
+          <button class="preset-btn" onclick="setTarget(3)">150</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label id="lbl_isf">Faktori ISF</label>
+        <div class="input-wrapper">
+          <input type="number" id="isf" value="50" step="any" inputmode="decimal">
+          <span class="unit" id="unitISF">mg/dL per 1U</span>
+        </div>
+        <div class="presets" id="isfPresets">
+          <button class="preset-btn" onclick="setISF(0)">30</button>
+          <button class="preset-btn" onclick="setISF(1)">40</button>
+          <button class="preset-btn active" onclick="setISF(2)">50</button>
+          <button class="preset-btn" onclick="setISF(3)">60</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label id="lbl_carbs">Karbohidratet (opsionale)</label>
+        <div class="input-wrapper">
+          <input type="number" id="carbs" placeholder="0" min="0" max="500" step="1" inputmode="numeric">
+          <span class="unit" id="unitCarbs">gramë</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label id="lbl_icr">Raporti ICR</label>
+        <div class="input-wrapper">
+          <input type="number" id="icr" value="10" min="1" max="50" step="1" inputmode="numeric">
+          <span class="unit">1U per X g</span>
+        </div>
+        <div class="presets" id="icrPresets">
+          <button class="preset-btn" onclick="setICR(0)">1:8</button>
+          <button class="preset-btn active" onclick="setICR(1)">1:10</button>
+          <button class="preset-btn" onclick="setICR(2)">1:12</button>
+          <button class="preset-btn" onclick="setICR(3)">1:15</button>
+        </div>
+      </div>
+
+      <button class="btn-calc" id="btnCalc" onclick="calculate()">Llogarit dozën</button>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-card" id="resultCard">
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--accent)"></span><span id="lbl_result">Rezultati</span></div>
+        <div class="result-main">
+          <div class="result-label" id="lbl_totalDose">Doza totale e rekomanduar</div>
+          <div class="result-value" id="totalDose">0</div>
+          <div class="result-unit" id="lbl_units">njësi insulinë (U)</div>
+          <div id="statusBadge"></div>
+        </div>
+        <div class="result-breakdown">
+          <div class="breakdown-row"><span class="bl" id="lbl_corr">Korrigjimi i sheqerit</span><span class="bv" id="corrDose">—</span></div>
+          <div class="breakdown-row"><span class="bl" id="lbl_carb">Mbulimi karbohidrateve</span><span class="bv" id="carbDose">—</span></div>
+          <div class="breakdown-row"><span class="bl" id="lbl_diff">Diferenca sheqerit</span><span class="bv" id="bgDiff">—</span></div>
+        </div>
+        <div class="warning-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span id="lbl_warn">Rezultat orientues. Konsulto endokrinologun para ndryshimit të dozës.</span>
+        </div>
+      </div>
+    </div>
+    <div class="disclaimer" id="lbl_disc">⚠ Ky kalkulator nuk zëvendëson këshillën mjekësore. ISF dhe ICR caktohen nga mjeku.</div>
+  </div>
+</div>
+
+<!-- VIEW: DASHBOARD -->
+<div class="view" id="view-dashboard">
+  <div class="dash-view">
+    <div class="dash-title" id="lbl_dashTitle">Dashboard</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">💉</div><div class="stat-value" id="s_dose">0</div><div class="stat-label" id="lbl_sDose">Doza sot</div><div class="stat-sub" id="ss_dose">U insulinë</div></div>
+      <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-value" id="s_avg">—</div><div class="stat-label" id="lbl_sAvg">Mesatare sheqeri</div><div class="stat-sub" id="ss_avg">7 ditë</div></div>
+      <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-value" id="s_range">—</div><div class="stat-label" id="lbl_sRange">Në interval</div><div class="stat-sub" id="ss_range">70–180 mg/dL</div></div>
+      <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-value" id="s_hypo">0</div><div class="stat-label" id="lbl_sHypo">Hipoglicemi</div><div class="stat-sub" id="ss_hypo">7 ditë</div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-ttl" id="lbl_chartT">Trendi 7 ditë</span>
+        <span class="chart-sub" id="lbl_chartS">mg/dL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="bgChart"></canvas></div>
+      <div class="chart-legend">
+        <span><span class="leg-dot" style="background:var(--primary)"></span><span id="lbl_legBG">Sheqeri</span></span>
+        <span><span class="leg-dot" style="background:var(--accent)"></span><span id="lbl_legDose">Doza</span></span>
+        <span><span class="leg-dot" style="background:rgba(74,144,217,0.5)"></span><span id="lbl_legTgt">Target 120</span></span>
+      </div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-label" id="lbl_tipLbl">Këshillë e ditës</div>
+      <div class="tip-text" id="tipText"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: HISTORY -->
+<div class="view" id="view-history">
+  <div class="hist-view">
+    <div class="hist-header">
+      <div class="hist-title" id="lbl_histT">Historiku</div>
+      <button class="hist-clear" id="lbl_clear" onclick="clearHistory()">Fshi</button>
+    </div>
+    <div id="histList"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav-bar">
+  <button class="nav-item active" id="nav-calc" onclick="switchView('calc')">
+    <span class="nav-icon">💊</span><span class="nav-lbl" id="nl_calc">Kalkulator</span><span class="nav-dot"></span>
+  </button>
+  <button class="nav-item" id="nav-dashboard" onclick="switchView('dashboard')">
+    <span class="nav-icon">📈</span><span class="nav-lbl" id="nl_dash">Dashboard</span><span class="nav-dot"></span>
+  </button>
+  <button class="nav-item" id="nav-history" onclick="switchView('history')">
+    <span class="nav-icon">📋</span><span class="nav-lbl" id="nl_hist">Historiku</span><span class="nav-dot"></span>
+  </button>
+</nav>
+
+<script>
+// =========================================
+// TRANSLATIONS
+// =========================================
+const L = {
+  sq:{
+    appTitle:'Kalkulator Insuline',appSubtitle:'Doza e insulinës rapide',
+    lbl_palette:'Zgjidh paletën e ngjyrave',lbl_light:'Ditë',lbl_dark:'Natë',
+    lbl_guide:'Si funksionon?',
+    g1t:'Zgjidh njësinë',g1d:'Kliko mg/dL ose mmol/L sipas glukometrit tënd.',
+    g2t:'Fut sheqerin aktual',g2d:'Vlera aktuale e glukometrit tënd.',
+    g3t:'ISF — Faktori i ndjeshmërisë',g3d:'Sa e ul sheqerin 1U insulinë. Zakonisht 30–60. Caktohet nga mjeku.',
+    g4t:'Karbohidratet (opsionale)',g4d:'Nëse do të hash, fut gramët dhe raportin ICR.',
+    lbl_fml:'Formula',formulaText:'Doza = (Sheqeri − Target) ÷ ISF<br><span style="font-size:12px;color:var(--text-muted);font-family:\'DM Sans\'">+ Karbohidrate ÷ ICR</span>',
+    lbl_data:'Të dhënat',lbl_cBG:'Sheqeri aktual',lbl_tBG:'Sheqeri i synuar (Target)',
+    lbl_isf:'Faktori ISF',lbl_carbs:'Karbohidratet (opsionale)',lbl_icr:'Raporti ICR',
+    btnCalc:'Llogarit dozën',unitCarbs:'gramë',
+    lbl_result:'Rezultati',lbl_totalDose:'Doza totale e rekomanduar',lbl_units:'njësi insulinë (U)',
+    lbl_corr:'Korrigjimi i sheqerit',lbl_carb:'Mbulimi karbohidrateve',lbl_diff:'Diferenca sheqerit',
+    lbl_warn:'Rezultat orientues. Konsulto endokrinologun para ndryshimit të dozës.',
+    lbl_disc:'⚠ Ky kalkulator nuk zëvendëson këshillën mjekësore. ISF dhe ICR caktohen nga mjeku.',
+    lbl_dashTitle:'Dashboard',
+    lbl_sDose:'Doza sot',ss_dose:'U insulinë',
+    lbl_sAvg:'Mesatare sheqeri',ss_avg:'7 ditë',
+    lbl_sRange:'Në interval',ss_range:'70–180 mg/dL',
+    lbl_sHypo:'Hipoglicemi',ss_hypo:'7 ditë',
+    lbl_chartT:'Trendi 7 ditë',lbl_chartS:'mg/dL',
+    lbl_legBG:'Sheqeri',lbl_legDose:'Doza',lbl_legTgt:'Target 120',
+    lbl_tipLbl:'Këshillë e ditës',
+    lbl_histT:'Historiku',lbl_clear:'Fshi',
+    nl_calc:'Kalkulator',nl_dash:'Dashboard',nl_hist:'Historiku',
+    rl_mg:'<span>Ulët (&lt;70)</span><span>Normal (70–130)</span><span>Lartë (130–250)</span><span>Shumë lartë (&gt;250)</span>',
+    rl_mmol:'<span>Ulët (&lt;3.9)</span><span>Normal (3.9–7.2)</span><span>Lartë (7.2–13.9)</span><span>Shumë lartë (&gt;13.9)</span>',
+    a_hypo_t:'🚨 Hipoglicemi — Rrezik!',
+    a_hypo_m:'Sheqeri <70 mg/dL. MOS merrni insulinë! Konsumoni 15–20g karbohidrate menjëherë: 4 tableta glukozë, 150ml lëng frutash, ose 3 karamele. Prisni 15 min dhe rikontrolloni.',
+    a_hypo_b1:'📞 Thirrni 112',a_hypo_b2:'Masat e shpejta',
+    a_vhigh_t:'⚠️ Hiperglicemi e rëndë',
+    a_vhigh_m:'Sheqeri >250 mg/dL. Konsultohuni me mjekun. Matni ketonet nëse keni ketostix. Hidratohuni mirë.',
+    a_vhigh_b1:'📞 Konsulto mjekun',
+    a_high_t:'📊 Sheqeri i ngritur',
+    a_high_m:'Sheqeri mbi target. Doza e llogaritur mund ta sjellë në nivel normal. Mos ushtroni intensivisht.',
+    a_normal_t:'✅ Sheqeri brenda normës',
+    a_normal_m:'Sheqeri juaj është i mirë. Nëse do të hani, merrni dozën e karbohidrateve.',
+    saved:'✓ Ruajtur në historik',cleared:'🗑 Historiku u fshi',
+    empty_h:'Nuk ka shënime ende.<br>Llogarit dozën e parë!',
+    confirm_c:'Fshi të gjithë historikun?',
+    ago_m:'min më parë',ago_h:'orë më parë',ago_d:'ditë më parë',
+    s_low:'Hipoglicemi — Mos merr insulinë!',s_normal:'Nivel brenda normës',
+    s_high:'Sheqer i lartë — Nevojitet korrigjim',s_vhigh:'Shumë i lartë — Konsulto mjekun!',
+    hi_c:'Korr',hi_cb:'Karboh',
+    err_fill:'Ju lutem plotësoni të gjitha fushat.',err_rng:'Sheqeri duhet ndërmjet',err_and:'–',
+    tips:['Kontrolloni sheqerin 2 orë pas ngrënies. Nivelis ideal post-prandial është <180 mg/dL.',
+      'ISF rritet pas aktivitetit fizik. Diskutoni me mjekun për ajustime të dozës pas stërvitjes.',
+      'Stresi e rrit glukozën. Kortizoli shkakton rezistencë ndaj insulinës — monitoroni me kujdes.',
+      'Hidratimi i mirë ndihmon veshkat të filtrojnë glukozën e tepërt. Pini 8+ gota ujë/ditë.',
+      'Mbani gjithmonë tableta glukozë me vete — hipoglicemia mund të ndodhë papritur.',
+      'Regjistroni çdo dozë — modelet e sheqerit ndihmojnë mjekun të ajustojë trajtimin.',
+      'Temperatura e lartë dhe sëmundjet infektive mund të rrisin shpejt glukozën — monitoroni me kujdes.',
+    ]
+  },
+  en:{
+    appTitle:'Insulin Calculator',appSubtitle:'Rapid insulin dose',
+    lbl_palette:'Choose color palette',lbl_light:'Light',lbl_dark:'Dark',
+    lbl_guide:'How does it work?',
+    g1t:'Select unit',g1d:'Tap mg/dL or mmol/L based on your glucometer.',
+    g2t:'Enter current blood sugar',g2d:'The current value shown on your glucometer.',
+    g3t:'ISF — Insulin Sensitivity Factor',g3d:'How much 1U of insulin lowers your blood sugar. Typically 30–60. Set by your doctor.',
+    g4t:'Carbohydrates (optional)',g4d:'If eating, enter grams and your ICR ratio.',
+    lbl_fml:'Formula',formulaText:'Dose = (Current BG − Target) ÷ ISF<br><span style="font-size:12px;color:var(--text-muted);font-family:\'DM Sans\'">+ Carbs ÷ ICR</span>',
+    lbl_data:'Inputs',lbl_cBG:'Current Blood Glucose',lbl_tBG:'Target Blood Glucose',
+    lbl_isf:'ISF (Correction Factor)',lbl_carbs:'Carbohydrates (optional)',lbl_icr:'ICR Ratio',
+    btnCalc:'Calculate Dose',unitCarbs:'grams',
+    lbl_result:'Result',lbl_totalDose:'Recommended total dose',lbl_units:'insulin units (U)',
+    lbl_corr:'Correction dose',lbl_carb:'Carb coverage',lbl_diff:'BG difference',
+    lbl_warn:'For guidance only. Always consult your endocrinologist before changing your dose.',
+    lbl_disc:'⚠ This calculator does not replace medical advice. ISF and ICR must be set by your doctor.',
+    lbl_dashTitle:'Dashboard',
+    lbl_sDose:'Dose today',ss_dose:'insulin units',
+    lbl_sAvg:'Average BG',ss_avg:'last 7 days',
+    lbl_sRange:'Time in range',ss_range:'70–180 mg/dL',
+    lbl_sHypo:'Hypoglycemia events',ss_hypo:'last 7 days',
+    lbl_chartT:'7-Day Trend',lbl_chartS:'mg/dL',
+    lbl_legBG:'Blood Sugar',lbl_legDose:'Dose',lbl_legTgt:'Target 120',
+    lbl_tipLbl:"Today's Tip",
+    lbl_histT:'History',lbl_clear:'Clear',
+    nl_calc:'Calculator',nl_dash:'Dashboard',nl_hist:'History',
+    rl_mg:'<span>Low (&lt;70)</span><span>Normal (70–130)</span><span>High (130–250)</span><span>Very high (&gt;250)</span>',
+    rl_mmol:'<span>Low (&lt;3.9)</span><span>Normal (3.9–7.2)</span><span>High (7.2–13.9)</span><span>Very high (&gt;13.9)</span>',
+    a_hypo_t:'🚨 Hypoglycemia — Danger!',
+    a_hypo_m:'Blood sugar <70 mg/dL. Do NOT take insulin! Consume 15–20g fast-acting carbs immediately: 4 glucose tablets, 150ml juice, or 3 candies. Wait 15 min and recheck.',
+    a_hypo_b1:'📞 Call 112',a_hypo_b2:'Quick actions',
+    a_vhigh_t:'⚠️ Severe Hyperglycemia',
+    a_vhigh_m:'Blood sugar >250 mg/dL. Contact your doctor. Test for ketones if available. Stay well hydrated.',
+    a_vhigh_b1:'📞 Contact doctor',
+    a_high_t:'📊 Elevated Blood Sugar',
+    a_high_m:'Blood sugar is above target. The calculated dose may bring it to normal. Avoid intense exercise.',
+    a_normal_t:'✅ Blood Sugar in Range',
+    a_normal_m:'Your blood sugar is in a good range. If eating, take the calculated carb coverage dose.',
+    saved:'✓ Saved to history',cleared:'🗑 History cleared',
+    empty_h:'No records yet.<br>Calculate your first dose!',
+    confirm_c:'Clear all history?',
+    ago_m:'min ago',ago_h:'hrs ago',ago_d:'days ago',
+    s_low:'Hypoglycemia — Do NOT take insulin!',s_normal:'Blood sugar in normal range',
+    s_high:'High blood sugar — correction needed',s_vhigh:'Very high — Contact your doctor!',
+    hi_c:'Corr',hi_cb:'Carbs',
+    err_fill:'Please fill in all required fields.',err_rng:'Blood sugar must be between',err_and:'–',
+    tips:['Check blood sugar 2 hours after meals. Ideal post-meal level is <180 mg/dL.',
+      'ISF increases after exercise. Discuss dose adjustments with your doctor after workouts.',
+      'Stress raises blood sugar — cortisol causes insulin resistance. Monitor closely.',
+      'Good hydration helps kidneys filter excess glucose. Drink 8+ glasses of water/day.',
+      'Always carry glucose tablets — hypoglycemia can happen suddenly and without warning.',
+      'Log every dose — patterns help your doctor fine-tune your insulin regimen.',
+      'Infections and fever can rapidly raise glucose — monitor more frequently when sick.',
+    ]
+  }
+};
+
+let lang = localStorage.getItem('lang') || 'sq';
+let unit = localStorage.getItem('unit') || 'mgdl';
+let theme = localStorage.getItem('theme') || 'light';
+let palette = localStorage.getItem('palette') || 'teal';
+let hist = JSON.parse(localStorage.getItem('hist') || '[]');
+const F = 18.0182;
+const tgMg = [100,120,140,150], isfMg = [30,40,50,60], icrP = [8,10,12,15];
+
+function tr(k){ return L[lang][k] || L.sq[k] || k; }
+function mg2mm(v){ return +(v/F).toFixed(1); }
+function mm2mg(v){ return +(v*F).toFixed(0); }
+function getUL(){ return unit==='mmol'?'mmol/L':'mg/dL'; }
+function toMg(v){ return unit==='mmol'?mm2mg(v):v; }
+
+// =========================================
+// APPLY TRANSLATIONS
+// =========================================
+const translatable = ['appTitle','appSubtitle','lbl_palette','lbl_light','lbl_dark','lbl_guide',
+  'g1t','g1d','g2t','g2d','g3t','g3d','g4t','g4d','lbl_fml','lbl_data',
+  'lbl_cBG','lbl_tBG','lbl_isf','lbl_carbs','lbl_icr','unitCarbs',
+  'lbl_result','lbl_totalDose','lbl_units','lbl_corr','lbl_carb','lbl_diff','lbl_warn','lbl_disc',
+  'lbl_dashTitle','lbl_sDose','ss_dose','lbl_sAvg','ss_avg','lbl_sRange','ss_range',
+  'lbl_sHypo','ss_hypo','lbl_chartT','lbl_chartS','lbl_legBG','lbl_legDose','lbl_legTgt','lbl_tipLbl',
+  'lbl_histT','lbl_clear','nl_calc','nl_dash','nl_hist'];
+
+function applyLang(){
+  translatable.forEach(k => {
+    const el = document.getElementById(k);
+    if(el) el.textContent = tr(k);
+  });
+  const fEl = document.getElementById('formulaText');
+  if(fEl) fEl.innerHTML = tr('formulaText');
+  const bc = document.getElementById('btnCalc');
+  if(bc) bc.textContent = tr('btnCalc');
+  updateRangeLabels();
+  updateTip();
+  renderHist();
+}
+
+function switchLang(l){
+  lang = l; localStorage.setItem('lang',l);
+  document.getElementById('btnSq').classList.toggle('active',l==='sq');
+  document.getElementById('btnEn').classList.toggle('active',l==='en');
+  applyLang();
+  updateDash();
+}
+
+// =========================================
+// THEME / PALETTE
+// =========================================
+function applyTheme(){
+  document.body.setAttribute('data-theme',theme);
+  document.body.setAttribute('data-palette',palette);
+  document.getElementById('themeBtn').textContent = theme==='dark'?'☀️':'🌙';
+  document.getElementById('chipLight').classList.toggle('active',theme==='light');
+  document.getElementById('chipDark').classList.toggle('active',theme==='dark');
+  document.querySelectorAll('.palette-swatch').forEach(s => s.classList.toggle('active',s.dataset.p===palette));
+  if(document.getElementById('view-dashboard').classList.contains('active')) drawChart();
+}
+function toggleTheme(){ setTheme(theme==='dark'?'light':'dark'); }
+function setTheme(t){ theme=t; localStorage.setItem('theme',t); applyTheme(); }
+function setPalette(p){ palette=p; localStorage.setItem('palette',p); applyTheme(); }
+function togglePalette(){ document.getElementById('palettePanel').classList.toggle('show'); }
+
+// =========================================
+// UNIT
+// =========================================
+function switchUnit(u){
+  if(u===unit) return;
+  const prev=unit; unit=u; localStorage.setItem('unit',u);
+  document.getElementById('btnMgdl').classList.toggle('active',u==='mgdl');
+  document.getElementById('btnMmol').classList.toggle('active',u==='mmol');
+  convFld('currentBG',prev,u); convFld('targetBG',prev,u); convFld('isf',prev,u);
+  const ul=getUL();
+  document.getElementById('unitCBG').textContent=ul;
+  document.getElementById('unitTBG').textContent=ul;
+  document.getElementById('unitISF').textContent=ul+' per 1U';
+  document.getElementById('currentBG').placeholder=u==='mmol'?'e.g. 12.2':'e.g. 220';
+  updateRangeLabels(); updatePresetLbls();
+  document.getElementById('resultCard').classList.remove('show');
+}
+function convFld(id,from,to){
+  const el=document.getElementById(id); const v=parseFloat(el.value);
+  if(isNaN(v)||v===0) return;
+  el.value = from==='mgdl'?mg2mm(v):mm2mg(v);
+}
+function updateRangeLabels(){ document.getElementById('rangeLabels').innerHTML=unit==='mmol'?tr('rl_mmol'):tr('rl_mg'); }
+function updatePresetLbls(){
+  document.querySelectorAll('#targetPresets .preset-btn').forEach((b,i)=>b.textContent=unit==='mmol'?mg2mm(tgMg[i]):tgMg[i]);
+  document.querySelectorAll('#isfPresets .preset-btn').forEach((b,i)=>b.textContent=unit==='mmol'?mg2mm(isfMg[i]):isfMg[i]);
+}
+function setTarget(i){ document.getElementById('targetBG').value=unit==='mmol'?mg2mm(tgMg[i]):tgMg[i]; hlP('targetPresets',i); }
+function setISF(i){ document.getElementById('isf').value=unit==='mmol'?mg2mm(isfMg[i]):isfMg[i]; hlP('isfPresets',i); }
+function setICR(i){ document.getElementById('icr').value=icrP[i]; hlP('icrPresets',i); }
+function hlP(id,a){ document.querySelectorAll('#'+id+' .preset-btn').forEach((b,i)=>b.classList.toggle('active',i===a)); }
+function toggleGuide(){ document.getElementById('guideContent').classList.toggle('open'); document.getElementById('guideArrow').classList.toggle('open'); }
+
+// =========================================
+// ALERTS
+// =========================================
+function showAlert(bg){
+  const sec=document.getElementById('alertSection');
+  let html='';
+  if(bg<70){
+    html=`<div class="alert-card alert-hypo">
+      <div class="alert-icon">🚨</div>
+      <div class="alert-content">
+        <h3>${tr('a_hypo_t')}</h3>
+        <p>${tr('a_hypo_m')}</p>
+        <div class="alert-actions">
+          <button class="alert-btn" onclick="window.location.href='tel:112'">${tr('a_hypo_b1')}</button>
+          <button class="alert-btn" onclick="showToast('15–20g • 15 min • rikontrollo')">${tr('a_hypo_b2')}</button>
+        </div>
+      </div>
+    </div>`;
+  } else if(bg>250){
+    html=`<div class="alert-card alert-hyper">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <h3>${tr('a_vhigh_t')}</h3>
+        <p>${tr('a_vhigh_m')}</p>
+        <div class="alert-actions"><button class="alert-btn" onclick="window.location.href='tel:112'">${tr('a_vhigh_b1')}</button></div>
+      </div>
+    </div>`;
+  } else if(bg>130){
+    html=`<div class="alert-card alert-hyper">
+      <div class="alert-icon">📊</div>
+      <div class="alert-content"><h3>${tr('a_high_t')}</h3><p>${tr('a_high_m')}</p></div>
+    </div>`;
+  } else {
+    html=`<div class="alert-card alert-ok">
+      <div class="alert-icon">✅</div>
+      <div class="alert-content"><h3>${tr('a_normal_t')}</h3><p>${tr('a_normal_m')}</p></div>
+    </div>`;
+  }
+  sec.innerHTML=html;
+}
+
+// =========================================
+// CALCULATE
+// =========================================
+function calculate(){
+  const rBG=parseFloat(document.getElementById('currentBG').value);
+  const rTgt=parseFloat(document.getElementById('targetBG').value);
+  const rISF=parseFloat(document.getElementById('isf').value);
+  const carbs=parseFloat(document.getElementById('carbs').value)||0;
+  const icr=parseFloat(document.getElementById('icr').value);
+  if(!rBG||!rTgt||!rISF||!icr){alert(tr('err_fill'));return;}
+  const bg=toMg(rBG),tgt=toMg(rTgt),isf=toMg(rISF);
+  if(bg<30||bg>600){
+    const mn=unit==='mmol'?mg2mm(30):30, mx=unit==='mmol'?mg2mm(600):600;
+    alert(tr('err_rng')+' '+mn+tr('err_and')+mx+' '+getUL());return;
+  }
+  showAlert(bg);
+  const diff=bg-tgt;
+  const corr=diff>0?diff/isf:0;
+  const carbD=carbs>0?carbs/icr:0;
+  const total=Math.max(0,corr+carbD);
+  const rounded=Math.round(total*2)/2;
+
+  document.getElementById('totalDose').textContent=rounded.toFixed(1);
+  document.getElementById('corrDose').textContent=corr>0?corr.toFixed(1)+' U':'0 U';
+  document.getElementById('carbDose').textContent=carbD>0?carbD.toFixed(1)+' U':'0 U';
+  const adiff=Math.abs(diff);
+  const dv=unit==='mmol'?mg2mm(adiff):Math.round(adiff);
+  document.getElementById('bgDiff').textContent=(diff>=0?'+':'-')+dv+' '+getUL();
+
+  let s='';
+  if(bg<70) s=`<div class="status-badge status-low"><span class="sd"></span>${tr('s_low')}</div>`;
+  else if(bg<=130) s=`<div class="status-badge status-normal"><span class="sd"></span>${tr('s_normal')}</div>`;
+  else if(bg<=250) s=`<div class="status-badge status-high"><span class="sd"></span>${tr('s_high')}</div>`;
+  else s=`<div class="status-badge status-vhigh"><span class="sd"></span>${tr('s_vhigh')}</div>`;
+  document.getElementById('statusBadge').innerHTML=s;
+
+  if(bg>=70){
+    hist.unshift({id:Date.now(),ts:Date.now(),bg,tgt,isf,carbs,icr,corr,carbD,total:rounded});
+    if(hist.length>100) hist=hist.slice(0,100);
+    localStorage.setItem('hist',JSON.stringify(hist));
+    showToast(tr('saved'));
+    updateDash();
+  }
+
+  const rc=document.getElementById('resultCard');
+  rc.classList.remove('show'); void rc.offsetWidth; rc.classList.add('show');
+  rc.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// =========================================
+// HISTORY
+// =========================================
+function timeAgo(ts){
+  const d=Math.floor((Date.now()-ts)/1000);
+  if(d<3600) return Math.floor(d/60)+' '+tr('ago_m');
+  if(d<86400) return Math.floor(d/3600)+' '+tr('ago_h');
+  return Math.floor(d/86400)+' '+tr('ago_d');
+}
+function getBadge(bg){ if(bg<70)return'badge-low'; if(bg<=130)return'badge-normal'; if(bg<=250)return'badge-high'; return'badge-vhigh'; }
+function renderHist(){
+  const list=document.getElementById('histList');
+  if(!hist.length){
+    list.innerHTML=`<div class="hist-empty"><div class="he-icon">💉</div><div>${tr('empty_h')}</div></div>`;
+    return;
+  }
+  list.innerHTML=hist.map(e=>{
+    const bgStr=unit==='mmol'?mg2mm(e.bg)+' mmol/L':e.bg+' mg/dL';
+    const details=`${tr('hi_c')}: ${e.corr.toFixed(1)}U${e.carbs?' · '+tr('hi_cb')+': '+e.carbs+'g → '+e.carbD.toFixed(1)+'U':''}`;
+    return`<div class="hist-item">
+      <div class="hi-badge ${getBadge(e.bg)}">${e.total.toFixed(1)}U</div>
+      <div class="hi-info">
+        <div class="hi-top"><span class="hi-bg">${bgStr}</span><span class="hi-dose">→ ${e.total.toFixed(1)} U</span></div>
+        <div class="hi-details">${details}</div>
+      </div>
+      <div class="hi-time">${timeAgo(e.ts)}</div>
+    </div>`;
+  }).join('');
+}
+function clearHistory(){
+  if(!confirm(tr('confirm_c'))) return;
+  hist=[]; localStorage.setItem('hist',JSON.stringify(hist));
+  renderHist(); updateDash(); showToast(tr('cleared'));
+}
+
+// =========================================
+// DASHBOARD
+// =========================================
+function updateDash(){
+  const now=Date.now();
+  const today=hist.filter(e=>now-e.ts<86400000);
+  const week=hist.filter(e=>now-e.ts<7*86400000);
+  document.getElementById('s_dose').textContent=today.reduce((a,e)=>a+e.total,0).toFixed(1);
+  if(week.length){
+    const avg=week.reduce((a,e)=>a+e.bg,0)/week.length;
+    document.getElementById('s_avg').textContent=unit==='mmol'?mg2mm(avg):Math.round(avg);
+    const inR=week.filter(e=>e.bg>=70&&e.bg<=180).length;
+    document.getElementById('s_range').textContent=Math.round(inR/week.length*100)+'%';
+  } else {
+    document.getElementById('s_avg').textContent='—';
+    document.getElementById('s_range').textContent='—';
+  }
+  document.getElementById('s_hypo').textContent=week.filter(e=>e.bg<70).length;
+  drawChart(); updateTip();
+}
+
+function drawChart(){
+  const canvas=document.getElementById('bgChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const w=canvas.parentElement.offsetWidth||380,h=130;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  canvas.style.width=w+'px'; canvas.style.height=h+'px';
+  ctx.scale(dpr,dpr);
+
+  const dark=theme==='dark';
+  const tCol=dark?'rgba(240,237,232,0.35)':'rgba(0,0,0,0.25)';
+  const gCol=dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.035)';
+  ctx.clearRect(0,0,w,h);
+
+  const now=Date.now();
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const s=now-i*86400000, e2=s+86400000;
+    const entries=hist.filter(e=>e.ts>=s&&e.ts<e2);
+    const avg=entries.length?entries.reduce((a,e)=>a+e.bg,0)/entries.length:null;
+    const dose=entries.reduce((a,e)=>a+e.total,0);
+    const lbl=new Date(s).toLocaleDateString(lang==='en'?'en-US':'sq-AL',{weekday:'short'});
+    days.push({lbl,avg,dose});
+  }
+
+  const pad={t:8,r:14,b:26,l:30};
+  const cw=w-pad.l-pad.r, ch=h-pad.t-pad.b;
+  const bgs=days.filter(d=>d.avg!==null).map(d=>d.avg);
+  const hasD=bgs.length>0;
+  const minV=hasD?Math.max(0,Math.min(...bgs)-30):40;
+  const maxV=hasD?Math.max(...bgs)+40:320;
+  const scY=v=>pad.t+ch-((v-minV)/(maxV-minV))*ch;
+
+  // Grid + labels
+  [70,120,180,250].forEach(v=>{
+    if(v<minV||v>maxV) return;
+    const y=scY(v);
+    ctx.strokeStyle=gCol; ctx.lineWidth=1; ctx.beginPath();
+    ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cw,y); ctx.stroke();
+    ctx.fillStyle=tCol; ctx.font=`9px 'DM Sans'`;
+    ctx.fillText(v,2,y+3);
+  });
+
+  // Target line
+  const ty=scY(120);
+  ctx.strokeStyle='rgba(74,144,217,0.25)'; ctx.lineWidth=1.5;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(pad.l,ty); ctx.lineTo(pad.l+cw,ty); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // X labels
+  ctx.fillStyle=tCol; ctx.font=`9px 'DM Sans'`;
+  days.forEach((d,i)=>{
+    const x=pad.l+(i/(days.length-1))*cw;
+    ctx.fillText(d.lbl,x-8,h-4);
+  });
+
+  if(!hasD){
+    ctx.fillStyle=tCol; ctx.font=`12px 'DM Sans'`; ctx.textAlign='center';
+    ctx.fillText(lang==='en'?'No data yet':'Ende nuk ka të dhëna',w/2,h/2);
+    ctx.textAlign='left'; return;
+  }
+
+  // Primary color from CSS
+  const cs=getComputedStyle(document.body);
+  const pCol=cs.getPropertyValue('--primary').trim()||'#1B6B5A';
+  const aCol=cs.getPropertyValue('--accent').trim()||'#D4613A';
+
+  // Dose mini bars
+  const maxDose=Math.max(...days.map(d=>d.dose),1);
+  days.forEach((d,i)=>{
+    if(!d.dose) return;
+    const x=pad.l+(i/(days.length-1))*cw;
+    const bh=(d.dose/maxDose)*18;
+    ctx.fillStyle=aCol+(dark?'55':'44');
+    ctx.fillRect(x-4,pad.t+ch-bh,8,bh);
+  });
+
+  // BG line
+  ctx.strokeStyle=pCol; ctx.lineWidth=2.5; ctx.lineJoin='round';
+  ctx.beginPath(); let first=true;
+  days.forEach((d,i)=>{
+    if(d.avg===null) return;
+    const x=pad.l+(i/(days.length-1))*cw;
+    const y=scY(d.avg);
+    if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // BG dots
+  days.forEach((d,i)=>{
+    if(d.avg===null) return;
+    const x=pad.l+(i/(days.length-1))*cw;
+    const y=scY(d.avg);
+    ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+    ctx.fillStyle=pCol; ctx.fill();
+    ctx.strokeStyle=dark?'#1E2230':'white'; ctx.lineWidth=1.5; ctx.stroke();
+  });
+}
+
+function updateTip(){
+  const tips=L[lang].tips;
+  const el=document.getElementById('tipText');
+  if(el) el.textContent=tips[new Date().getDay()%tips.length];
+}
+
+// =========================================
+// NAVIGATION
+// =========================================
+let curView='calc';
+function switchView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nav-'+v).classList.add('active');
+  curView=v;
+  if(v==='dashboard') updateDash();
+  if(v==='history') renderHist();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// =========================================
+// TOAST
+// =========================================
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// =========================================
+// INIT
+// =========================================
+function init(){
+  document.body.setAttribute('data-theme',theme);
+  document.body.setAttribute('data-palette',palette);
+  document.getElementById('btnMgdl').classList.toggle('active',unit==='mgdl');
+  document.getElementById('btnMmol').classList.toggle('active',unit==='mmol');
+  document.getElementById('btnSq').classList.toggle('active',lang==='sq');
+  document.getElementById('btnEn').classList.toggle('active',lang==='en');
+  document.getElementById('themeBtn').textContent=theme==='dark'?'☀️':'🌙';
+  document.getElementById('chipLight').classList.toggle('active',theme==='light');
+  document.getElementById('chipDark').classList.toggle('active',theme==='dark');
+  document.querySelectorAll('.palette-swatch').forEach(s=>s.classList.toggle('active',s.dataset.p===palette));
+
+  const si=localStorage.getItem('savedISF'), st=localStorage.getItem('savedTarget');
+  if(si) document.getElementById('isf').value=si;
+  if(st) document.getElementById('targetBG').value=st;
+
+  applyLang(); applyTheme(); updatePresetLbls(); updateRangeLabels();
+
+  document.querySelectorAll('input').forEach(inp=>inp.addEventListener('keypress',e=>{if(e.key==='Enter')calculate();}));
+  document.getElementById('isf').addEventListener('change',e=>localStorage.setItem('savedISF',e.target.value));
+  document.getElementById('targetBG').addEventListener('change',e=>localStorage.setItem('savedTarget',e.target.value));
+}
+
+window.addEventListener('offline',()=>document.getElementById('offlineBadge').classList.add('show'));
+window.addEventListener('online',()=>document.getElementById('offlineBadge').classList.remove('show'));
+window.addEventListener('resize',()=>{if(curView==='dashboard')drawChart();});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+init();
+</script>
+</body>
+</html>
